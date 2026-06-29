@@ -1,0 +1,16 @@
+# Python
+__pycache__/
+*.pyc
+
+# Environment
+.env
+venv/
+
+# MySQL Data
+mysql-data/
+
+# Docker
+*.log
+
+# VS Code
+.vscode/
