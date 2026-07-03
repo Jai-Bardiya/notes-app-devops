@@ -26,8 +26,7 @@ services:
 
 
   flaskapp:
-    build:
-      context: .
+    image: jaibardiya5/notes-flask-app
     container_name: flask_app
     environment:
       MYSQL_HOST: mysql
