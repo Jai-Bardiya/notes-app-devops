@@ -20,23 +20,50 @@ pipeline {
                 echo "Running Tests..."
             }
         }
-        stage("Push TO Docker Hub") {
+
+        stage('Push To Docker Hub') {
             steps {
                 withCredentials([usernamePassword(
-                    credentialsId: "dockerhubcreds",
-                    passwordVariable: "dockerhubpass",
-                    usernameVariable: "dockerhubusername")]){
-                sh "docker login -u ${env.dockerhubusername} -p ${env.dockerhubpass}"
-                sh "docker image tag notes-flask-app ${env.dockerhubusername}/notes-flask-app"
-                sh "docker push ${env.dockerhubusername}/notes-flask-app:latest"
+                    credentialsId: 'dockerhubcreds',
+                    usernameVariable: 'DOCKER_USERNAME',
+                    passwordVariable: 'DOCKER_PASSWORD'
+                )]) {
+
+                    sh '''
+                    echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
+                    docker tag notes-flask-app:latest $DOCKER_USERNAME/notes-flask-app:latest
+                    docker push $DOCKER_USERNAME/notes-flask-app:latest
+                    '''
                 }
             }
         }
+
         stage('Deploy') {
             steps {
                 sh 'docker compose up -d --build flaskapp'
             }
         }
 
+    }
+
+    post {
+
+        success {
+            emailext(
+                from: 'jaibardiya508@gmail.com',
+                to: 'jaibardiya508@gmail.com',
+                subject: 'Build Success - Notes App CI/CD',
+                body: 'Build completed successfully and deployment finished.'
+            )
+        }
+
+        failure {
+            emailext(
+                from: 'jaibardiya508@gmail.com',
+                to: 'jaibardiya508@gmail.com',
+                subject: 'Build Failed - Notes App CI/CD',
+                body: 'The Jenkins build failed. Please check the console logs.'
+            )
+        }
     }
 }
